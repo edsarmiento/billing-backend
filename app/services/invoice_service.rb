@@ -1,7 +1,7 @@
 class InvoiceService
   attr_reader :repository, :validator, :exporter
 
-  def initialize(repository: InvoiceRepository.new, 
+  def initialize(repository: InvoiceRepository.new,
                  validator: InvoiceSearchValidator.new,
                  exporter: InvoiceCsvExporter.new)
     @repository = repository
@@ -9,7 +9,6 @@ class InvoiceService
     @exporter = exporter
   end
 
-  # Single responsibility: Search invoices
   def search_invoices(params = {})
     repository.search(params)
   end
@@ -18,7 +17,6 @@ class InvoiceService
     repository.find_by_invoice_number(number)
   end
 
-  # Single responsibility: Pagination
   def paginated_search(params = {}, page: 1, per_page: 20)
     repository.search_paginated(params, page: page, per_page: per_page)
   end
@@ -32,12 +30,10 @@ class InvoiceService
     }
   end
 
-  # Single responsibility: Validation
   def validate_search_params(params)
     validator.validate(params)
   end
 
-  # Single responsibility: Export
   def export_to_csv(params = {})
     invoices = params.empty? ? repository.all : repository.search(params)
     exporter.export(invoices)

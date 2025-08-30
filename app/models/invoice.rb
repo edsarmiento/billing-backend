@@ -5,7 +5,7 @@ class Invoice < ApplicationRecord
   scope :active, -> { where(active: true) }
   scope :inactive, -> { where(active: false) }
   scope :recent, -> { order(invoice_date: :desc) }
-  
+
   def formatted_total
     "$#{total.to_f.round(2)}"
   end

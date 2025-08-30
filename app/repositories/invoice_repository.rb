@@ -3,7 +3,6 @@ class InvoiceRepository < BaseRepository
     super(Invoice)
   end
 
-  # Search and filtering methods with caching
   def search(params = {})
     cache_key = "invoices_search_#{params.to_json}"
     
@@ -38,12 +37,10 @@ class InvoiceRepository < BaseRepository
         invoices = params[:active] == 'true' ? invoices.active : invoices.inactive
       end
       
-      # Default sorting with index optimization
       invoices.recent
     end
   end
 
-  # Specific query methods with caching
   def find_by_invoice_number(number)
     Rails.cache.fetch("invoice_number_#{number}", expires_in: 1.hour) do
       model.find_by(invoice_number: number)
@@ -106,14 +103,12 @@ class InvoiceRepository < BaseRepository
     end
   end
 
-  # Export methods with streaming for large datasets
   def to_csv(options = {})
     require 'csv'
-    
-    # Use streaming for better memory performance
+
     Enumerator.new do |yielder|
       yielder << CSV.generate_line(['ID', 'Invoice Number', 'Total', 'Date', 'Status', 'Active'])
-      
+
       model.find_in_batches(batch_size: 1000) do |batch|
         batch.each do |invoice|
           yielder << CSV.generate_line([
@@ -129,7 +124,6 @@ class InvoiceRepository < BaseRepository
     end
   end
 
-  # Pagination support with optimized queries
   def paginated(page: 1, per_page: 20)
     model.recent.page(page).per(per_page)
   end
@@ -138,7 +132,6 @@ class InvoiceRepository < BaseRepository
     search(params).page(page).per(per_page)
   end
 
-  # Performance monitoring methods
   def count_with_cache
     Rails.cache.fetch("invoices_count", expires_in: 5.minutes) do
       model.count
