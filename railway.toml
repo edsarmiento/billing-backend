@@ -1,0 +1,14 @@
+[build]
+builder = "DOCKERFILE"
+dockerfile = "Dockerfile.prod"
+
+[deploy]
+startCommand = "bundle exec rails server -b 0.0.0.0 -p $PORT"
+healthcheckPath = "/api/v1/invoices"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[deploy.envs]
+RAILS_ENV = "production"
+RAILS_SERVE_STATIC_FILES = "true"

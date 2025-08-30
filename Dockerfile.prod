@@ -1,0 +1,54 @@
+# Production Dockerfile for Railway deployment
+ARG RUBY_VERSION=3.3.0
+FROM docker.io/library/ruby:$RUBY_VERSION-slim
+
+# Install system dependencies
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    curl \
+    git \
+    libpq-dev \
+    libvips \
+    nodejs \
+    npm \
+    postgresql-client \
+    pkg-config \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
+
+# Set working directory
+WORKDIR /rails
+
+# Set production environment
+ENV RAILS_ENV=production
+ENV BUNDLE_PATH=/usr/local/bundle
+ENV BUNDLE_DEPLOYMENT=1
+ENV BUNDLE_WITHOUT=development:test
+
+# Install application gems
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
+
+# Copy application code
+COPY . .
+
+# Precompile assets
+RUN bundle exec rails assets:precompile
+
+# Create a non-root user for security
+RUN groupadd --system --gid 1000 rails && \
+    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
+    chown -R rails:rails db log storage tmp
+USER 1000:1000
+
+# Add a script to be executed every time the container starts
+COPY entrypoint.prod.sh /usr/bin/
+RUN chmod +x /usr/bin/entrypoint.prod.sh
+ENTRYPOINT ["entrypoint.prod.sh"]
+
+# Configure the main process to run when running the image
+EXPOSE 3000
+
+# Start the main process
+CMD ["rails", "server", "-b", "0.0.0.0"]
