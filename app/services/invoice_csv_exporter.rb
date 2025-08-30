@@ -1,3 +1,5 @@
+require 'csv'
+
 class InvoiceCsvExporter
   def export(invoices)
     CSV.generate do |csv|
