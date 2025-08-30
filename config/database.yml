@@ -12,3 +12,11 @@ development:
 
 test:
   <<: *default
+
+# Production configuration for Railway
+production:
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  url: <%= ENV['DATABASE_URL'] %>
+  sslmode: require

@@ -1,9 +1,0 @@
-# Production database configuration for Railway
-production:
-  adapter: postgresql
-  encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: <%= ENV.fetch("DATABASE_HOST") { "devtestdatabase.contalink.com" } %>
-  database: <%= ENV.fetch("DATABASE_NAME") { "testinvoices" } %>
-  username: <%= ENV.fetch("DATABASE_USERNAME") { "developer" } %>
-  password: <%= ENV.fetch("DATABASE_PASSWORD") { "UQpaA9TA" } %>
