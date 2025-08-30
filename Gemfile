@@ -26,6 +26,9 @@ gem "bootsnap", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
+# CORS support for cross-origin requests
+gem "rack-cors"
+
 # Pagination for better performance
 gem "kaminari"
 
