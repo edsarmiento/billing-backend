@@ -10,7 +10,6 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :invoices, only: [:index, :show] do
         collection do
-          get :search
           get :export
         end
       end

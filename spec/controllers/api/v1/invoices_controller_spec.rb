@@ -23,37 +23,45 @@ RSpec.describe Api::V1::InvoicesController, type: :controller do
       allow(service).to receive(:paginated_search).and_return(paginated_invoices)
       allow(service).to receive(:get_pagination_metadata).and_return(pagination_metadata)
       allow(service).to receive(:validate_search_params).and_return([])
+      allow(service).to receive(:search_invoices).and_return(real_invoices)
     end
 
-    context 'with valid parameters' do
-      it 'returns a successful response' do
-        get :index, format: :json
-        expect(response).to have_http_status(:ok)
-      end
-
-      it 'returns paginated invoices' do
-        get :index, format: :json
-        expect(service).to have_received(:paginated_search).with({}, page: 1, per_page: nil)
+    context 'with pagination parameters' do
+      it 'returns paginated response' do
+        get :index, params: { page: 1, per_page: 20 }, format: :json
+        expect(service).to have_received(:paginated_search).with({ "page" => "1", "per_page" => "20" }, page: 1, per_page: 20)
+        expect(response.headers['X-Total-Count']).to eq(real_invoices.count.to_s)
+        expect(response.headers['X-Page-Count']).to eq('1')
       end
 
       it 'includes pagination metadata' do
-        get :index, format: :json
+        get :index, params: { page: 1, per_page: 20 }, format: :json
         expect(assigns(:pagination)).to eq(pagination_metadata)
       end
+    end
 
-      it 'sets performance headers' do
+    context 'without pagination parameters' do
+      it 'returns all results without pagination' do
         get :index, format: :json
-        expect(response.headers['X-Total-Count']).to eq(real_invoices.count.to_s)
-        expect(response.headers['X-Page-Count']).to eq('1')
+        expect(service).to have_received(:search_invoices).with({})
+        expect(response.headers['X-Result-Count']).to eq(real_invoices.count.to_s)
+        expect(response.headers['X-Total-Count']).to be_nil
+        expect(response.headers['X-Page-Count']).to be_nil
       end
     end
 
     context 'with search parameters' do
       let(:search_params) { { status: 'Vigente', page: 2, per_page: 10 } }
 
-      it 'passes search parameters to service' do
+      it 'passes search parameters to service with pagination' do
         get :index, params: search_params, format: :json
-        expect(service).to have_received(:paginated_search).with({"status"=>"Vigente", "page"=>"2", "per_page"=>"10"}, page: 2, per_page: 10)
+        expect(service).to have_received(:paginated_search).with({ "status" => "Vigente", "page" => "2", "per_page" => "10" }, page: 2, per_page: 10)
+      end
+
+      it 'passes search parameters without pagination' do
+        search_params_no_pagination = { status: 'Vigente' }
+        get :index, params: search_params_no_pagination, format: :json
+        expect(service).to have_received(:search_invoices).with({ "status" => "Vigente" })
       end
     end
 
@@ -113,31 +121,6 @@ RSpec.describe Api::V1::InvoicesController, type: :controller do
     end
   end
 
-  describe 'GET #search' do
-    # Use real data from the read-only database
-    let(:real_invoices) { Invoice.where(status: 'Vigente').limit(2) }
-
-    before do
-      allow(service).to receive(:search_invoices).and_return(real_invoices)
-    end
-
-    it 'returns a successful response' do
-      get :search, params: { status: 'Vigente' }, format: :json
-      expect(response).to have_http_status(:ok)
-    end
-
-    it 'searches invoices with parameters' do
-      search_params = { status: 'Vigente', min_amount: 10 }
-      get :search, params: search_params, format: :json
-      expect(service).to have_received(:search_invoices).with({"status"=>"Vigente", "min_amount"=>"10"})
-    end
-
-    it 'sets result count header' do
-      get :search, params: { status: 'Vigente' }, format: :json
-      expect(response.headers['X-Result-Count']).to eq(real_invoices.count.to_s)
-    end
-  end
-
   describe 'GET #export' do
     let(:csv_data) { "ID,Invoice Number,Total,Date,Status,Active,Formatted Total\n1,C30481,14.45,2022-01-17,Vigente,true,$14.45\n" }
 
@@ -165,7 +148,7 @@ RSpec.describe Api::V1::InvoicesController, type: :controller do
     it 'exports with parameters' do
       export_params = { status: 'Vigente' }
       get :export, params: export_params, format: :csv
-      expect(service).to have_received(:export_to_csv).with(export_params.stringify_keys)
+      expect(service).to have_received(:export_to_csv).with({ "status" => "Vigente" })
     end
 
     it 'streams CSV data' do
@@ -183,6 +166,7 @@ RSpec.describe Api::V1::InvoicesController, type: :controller do
         allow(service).to receive(:validate_search_params).and_return([])
         allow(service).to receive(:paginated_search).and_return(paginated_invoices)
         allow(service).to receive(:get_pagination_metadata).and_return(pagination_metadata)
+        allow(service).to receive(:search_invoices).and_return([])
       end
 
       it 'sets cache control headers' do
@@ -194,6 +178,23 @@ RSpec.describe Api::V1::InvoicesController, type: :controller do
       it 'sets ETag header' do
         get :index, format: :json
         expect(response.headers['ETag']).to be_present
+      end
+    end
+
+    describe '#pagination_requested?' do
+      it 'returns true when page parameter is present' do
+        params = { page: '1' }
+        expect(controller.send(:pagination_requested?, params)).to be true
+      end
+
+      it 'returns true when per_page parameter is present' do
+        params = { per_page: '20' }
+        expect(controller.send(:pagination_requested?, params)).to be true
+      end
+
+      it 'returns false when no pagination parameters are present' do
+        params = { status: 'Vigente' }
+        expect(controller.send(:pagination_requested?, params)).to be false
       end
     end
   end
