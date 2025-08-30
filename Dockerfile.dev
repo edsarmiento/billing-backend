@@ -1,0 +1,43 @@
+# Development Dockerfile for Rails application
+ARG RUBY_VERSION=3.3.0
+FROM docker.io/library/ruby:$RUBY_VERSION-slim
+
+# Install system dependencies
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    curl \
+    git \
+    libpq-dev \
+    libvips \
+    nodejs \
+    npm \
+    postgresql-client \
+    pkg-config \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
+
+# Set working directory
+WORKDIR /rails
+
+# Set development environment
+ENV RAILS_ENV=development
+ENV BUNDLE_PATH=/usr/local/bundle
+
+# Install application gems
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
+
+# Copy application code
+COPY . .
+
+# Add a script to be executed every time the container starts
+COPY entrypoint.sh /usr/bin/
+RUN chmod +x /usr/bin/entrypoint.sh
+ENTRYPOINT ["entrypoint.sh"]
+
+# Configure the main process to run when running the image
+EXPOSE 3000
+
+# Start the main process
+CMD ["rails", "server", "-b", "0.0.0.0"]

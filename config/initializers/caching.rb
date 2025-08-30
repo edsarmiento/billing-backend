@@ -1,11 +1,12 @@
 # Simple caching configuration for the invoice consultation app
 
 Rails.application.configure do
-  # Use Redis for caching in production
-  # if Rails.env.production?
-    config.cache_store = :redis_cache_store, {
-      url: ENV['REDIS_URL'] || 'redis://localhost:6379/1',
-      expires_in: 1.hour
-    }
-  # end
+  # Configure Redis caching using centralized Redis configuration
+  config.cache_store = :redis_cache_store, {
+    url: RedisConfig.url,
+    expires_in: 1.hour,
+    reconnect_attempts: 3,
+    reconnect_delay: 0.5,
+    reconnect_delay_max: 2.0
+  }
 end

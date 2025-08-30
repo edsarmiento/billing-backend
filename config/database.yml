@@ -18,10 +18,11 @@ default: &default
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: devtestdatabase.contalink.com
-  database: testinvoices
-  username: developer
-  password: UQpaA9TA
+  # Use environment variables for Docker Compose, fallback to existing config
+  host: <%= ENV.fetch("DATABASE_HOST") { "devtestdatabase.contalink.com" } %>
+  database: <%= ENV.fetch("DATABASE_NAME") { "testinvoices" } %>
+  username: <%= ENV.fetch("DATABASE_USERNAME") { "developer" } %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD") { "UQpaA9TA" } %>
 
 development:
   <<: *default
