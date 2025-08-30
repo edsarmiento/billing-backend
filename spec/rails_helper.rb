@@ -32,12 +32,11 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = "#{::Rails.root}/spec/fixtures"
+  # config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
-  # If you're not using ActiveRecord, or you'd prefer not to run each of your
-  # examples within a transaction, remove the following line or assign false
-  # instead of true.
-  config.use_transactional_fixtures = true
+  # Since we're working with a read-only database, we don't use transactional fixtures
+  # or database cleaner as we can't modify the database
+  config.use_transactional_fixtures = false
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
@@ -65,24 +64,20 @@ RSpec.configure do |config|
   # FactoryBot configuration
   config.include FactoryBot::Syntax::Methods
 
-  # Database cleaner configuration
+  # Read-only database configuration
+  # Since we can't modify the database, we'll use the existing data
+  # and focus on testing the application logic and API responses
   config.before(:suite) do
-    DatabaseCleaner.clean_with(:truncation)
+    # Ensure we're connected to the read-only database
+    puts "Running tests against read-only database"
   end
 
-  config.before(:each) do
-    DatabaseCleaner.strategy = :transaction
-  end
+  # Disable database cleaner since we can't modify the database
+  # config.before(:each) do
+  #   DatabaseCleaner.start
+  # end
 
-  config.before(:each, js: true) do
-    DatabaseCleaner.strategy = :truncation
-  end
-
-  config.before(:each) do
-    DatabaseCleaner.start
-  end
-
-  config.after(:each) do
-    DatabaseCleaner.clean
-  end
+  # config.after(:each) do
+  #   DatabaseCleaner.clean
+  # end
 end

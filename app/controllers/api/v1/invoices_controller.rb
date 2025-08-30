@@ -3,15 +3,16 @@ class Api::V1::InvoicesController < ApplicationController
   before_action :set_cache_headers, only: [:index, :show, :search]
 
   def index
-    validation_errors = @service.validate_search_params(params)
+    search_params = params.permit(:invoice_number, :status, :date_from, :date_to, :min_amount, :max_amount, :active, :page, :per_page).to_h
+    validation_errors = @service.validate_search_params(search_params)
     if validation_errors.any?
       render json: { errors: validation_errors }, status: :bad_request
       return
     end
 
-    @invoices = @service.paginated_search(params, page: params[:page] || 1, per_page: params[:per_page])
+    @invoices = @service.paginated_search(search_params, page: (params[:page] || 1).to_i, per_page: params[:per_page]&.to_i)
     @pagination = @service.get_pagination_metadata(@invoices)
-    @search_params = params.permit(:invoice_number, :status, :date_from, :date_to, :min_amount, :max_amount, :active)
+    @search_params = search_params
 
     response.headers['X-Total-Count'] = @pagination[:total_count].to_s
     response.headers['X-Page-Count'] = @pagination[:total_pages].to_s
@@ -26,16 +27,21 @@ class Api::V1::InvoicesController < ApplicationController
   end
 
   def search
-    @invoices = @service.search_invoices(params)
-    @search_params = params.permit(:invoice_number, :status, :date_from, :date_to, :min_amount, :max_amount, :active)
+    search_params = params.permit(:invoice_number, :status, :date_from, :date_to, :min_amount, :max_amount, :active).to_h
+    @invoices = @service.search_invoices(search_params)
+    @search_params = search_params
     
     # Add performance headers
     response.headers['X-Result-Count'] = @invoices.count.to_s
+    
+    # Use the same template as index since we return the same data structure
+    render :index
   end
 
   def export
     # Stream the CSV response for better performance
-    csv_data = @service.export_to_csv(params)
+    export_params = params.permit(:invoice_number, :status, :date_from, :date_to, :min_amount, :max_amount, :active).to_h
+    csv_data = @service.export_to_csv(export_params)
     
     response.headers['Content-Type'] = 'text/csv'
     response.headers['Content-Disposition'] = "attachment; filename=invoices_#{Date.current.strftime('%Y%m%d')}.csv"
