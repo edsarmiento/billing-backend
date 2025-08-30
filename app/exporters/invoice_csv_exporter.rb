@@ -1,9 +1,9 @@
-require 'csv'
+require "csv"
 
 class InvoiceCsvExporter
   def export(invoices)
     CSV.generate do |csv|
-      csv << ['ID', 'Invoice Number', 'Total', 'Date', 'Status', 'Active', 'Formatted Total']
+      csv << [ "ID", "Invoice Number", "Total", "Date", "Status", "Active", "Formatted Total" ]
       invoices.each do |invoice|
         csv << [
           invoice.id,

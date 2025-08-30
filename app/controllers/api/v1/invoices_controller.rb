@@ -1,6 +1,6 @@
 class Api::V1::InvoicesController < ApplicationController
   before_action :initialize_service
-  before_action :set_cache_headers, only: [:index, :show]
+  before_action :set_cache_headers, only: [ :index, :show ]
 
   def index
     search_params = params.permit(:invoice_number, :status, :date_from, :date_to, :min_amount, :max_amount, :active, :page, :per_page).to_h
@@ -15,31 +15,31 @@ class Api::V1::InvoicesController < ApplicationController
       @pagination = @service.get_pagination_metadata(@invoices)
       @search_params = search_params
 
-      response.headers['X-Total-Count'] = @pagination[:total_count].to_s
-      response.headers['X-Page-Count'] = @pagination[:total_pages].to_s
+      response.headers["X-Total-Count"] = @pagination[:total_count].to_s
+      response.headers["X-Page-Count"] = @pagination[:total_pages].to_s
     else
       @invoices = @service.search_invoices(search_params)
       @search_params = search_params
-      
-      response.headers['X-Result-Count'] = @invoices.count.to_s
+
+      response.headers["X-Result-Count"] = @invoices.count.to_s
     end
   end
 
   def show
     @invoice = @service.find_invoice_by_number(params[:id])
-    
+
     if @invoice.nil?
-      render json: { error: 'Invoice not found' }, status: :not_found
+      render json: { error: "Invoice not found" }, status: :not_found
     end
   end
 
   def export
     export_params = params.permit(:invoice_number, :status, :date_from, :date_to, :min_amount, :max_amount, :active).to_h
     csv_data = @service.export_to_csv(export_params)
-    
-    response.headers['Content-Type'] = 'text/csv'
-    response.headers['Content-Disposition'] = "attachment; filename=invoices_#{Date.current.strftime('%Y%m%d')}.csv"
-    
+
+    response.headers["Content-Type"] = "text/csv"
+    response.headers["Content-Disposition"] = "attachment; filename=invoices_#{Date.current.strftime('%Y%m%d')}.csv"
+
     self.response_body = csv_data
   end
 
@@ -50,8 +50,8 @@ class Api::V1::InvoicesController < ApplicationController
   end
 
   def set_cache_headers
-    response.headers['Cache-Control'] = 'public, max-age=300'
-    response.headers['ETag'] = Digest::MD5.hexdigest(request.fullpath + params.to_json)
+    response.headers["Cache-Control"] = "public, max-age=300"
+    response.headers["ETag"] = Digest::MD5.hexdigest(request.fullpath + params.to_json)
   end
 
   def pagination_requested?(params)

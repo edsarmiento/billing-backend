@@ -1,4 +1,4 @@
-require 'kaminari'
+require "kaminari"
 
 # Kaminari configuration for pagination
 Kaminari.configure do |config|

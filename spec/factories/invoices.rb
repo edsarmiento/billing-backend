@@ -3,8 +3,8 @@ FactoryBot.define do
     sequence(:invoice_number) { |n| "C#{30000 + n}" }
     total { rand(10.0..50.0).round(2) }
     invoice_date { rand(1.year.ago.to_date..Date.current) }
-    status { ['Vigente', 'Pagada', 'Vencida'].sample }
-    active { [true, false].sample }
+    status { [ 'Vigente', 'Pagada', 'Vencida' ].sample }
+    active { [ true, false ].sample }
 
     trait :vigente do
       status { 'Vigente' }

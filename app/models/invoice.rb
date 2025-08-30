@@ -1,7 +1,6 @@
-require 'kaminari'
+require "kaminari"
 
 class Invoice < ApplicationRecord
-
   scope :active, -> { where(active: true) }
   scope :inactive, -> { where(active: false) }
   scope :recent, -> { order(invoice_date: :desc) }
@@ -31,17 +30,17 @@ class Invoice < ApplicationRecord
   end
 
   def vigente?
-    status == 'Vigente'
+    status == "Vigente"
   end
 
   def amount_category
     case total.to_f
     when 0..15
-      'low'
+      "low"
     when 15..25
-      'medium'
+      "medium"
     else
-      'high'
+      "high"
     end
   end
 
@@ -51,14 +50,14 @@ class Invoice < ApplicationRecord
 
   def status_badge_class
     case status
-    when 'Vigente'
-      'badge-success'
-    when 'Pagada'
-      'badge-primary'
-    when 'Vencida'
-      'badge-warning'
+    when "Vigente"
+      "badge-success"
+    when "Pagada"
+      "badge-primary"
+    when "Vencida"
+      "badge-warning"
     else
-      'badge-secondary'
+      "badge-secondary"
     end
   end
 end

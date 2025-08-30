@@ -94,7 +94,7 @@ RSpec.describe InvoiceService do
     end
 
     context 'when validation fails' do
-      let(:errors) { ['Invalid date format'] }
+      let(:errors) { [ 'Invalid date format' ] }
 
       it 'returns validation errors' do
         result = service.validate_search_params(params)

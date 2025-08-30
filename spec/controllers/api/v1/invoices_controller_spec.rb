@@ -67,7 +67,7 @@ RSpec.describe Api::V1::InvoicesController, type: :controller do
 
     context 'with invalid parameters' do
       before do
-        allow(service).to receive(:validate_search_params).and_return(['Invalid date format'])
+        allow(service).to receive(:validate_search_params).and_return([ 'Invalid date format' ])
       end
 
       it 'returns bad request status' do

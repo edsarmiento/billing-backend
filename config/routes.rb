@@ -8,7 +8,7 @@ Rails.application.routes.draw do
   # API routes for invoice consultation
   namespace :api do
     namespace :v1 do
-      resources :invoices, only: [:index, :show] do
+      resources :invoices, only: [ :index, :show ] do
         collection do
           get :export
         end

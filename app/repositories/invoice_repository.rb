@@ -5,38 +5,38 @@ class InvoiceRepository < BaseRepository
 
   def search(params = {})
     cache_key = "invoices_search_#{params.to_json}"
-    
+
     Rails.cache.fetch(cache_key, expires_in: 15.minutes) do
       invoices = model.all
-      
+
       if params[:invoice_number].present?
         invoices = invoices.where("invoice_number ILIKE ?", "%#{params[:invoice_number]}%")
       end
-      
+
       if params[:status].present?
         invoices = invoices.where(status: params[:status])
       end
-      
+
       if params[:date_from].present?
         invoices = invoices.where("invoice_date >= ?", params[:date_from])
       end
-      
+
       if params[:date_to].present?
         invoices = invoices.where("invoice_date <= ?", params[:date_to])
       end
-      
+
       if params[:min_amount].present?
         invoices = invoices.where("total >= ?", params[:min_amount])
       end
-      
+
       if params[:max_amount].present?
         invoices = invoices.where("total <= ?", params[:max_amount])
       end
-      
+
       if params[:active].present?
-        invoices = params[:active] == 'true' ? invoices.active : invoices.inactive
+        invoices = params[:active] == "true" ? invoices.active : invoices.inactive
       end
-      
+
       invoices.recent
     end
   end
@@ -55,7 +55,7 @@ class InvoiceRepository < BaseRepository
 
   def vigente
     Rails.cache.fetch("invoices_vigente", expires_in: 30.minutes) do
-      model.where(status: 'Vigente')
+      model.where(status: "Vigente")
     end
   end
 
@@ -104,10 +104,10 @@ class InvoiceRepository < BaseRepository
   end
 
   def to_csv(options = {})
-    require 'csv'
+    require "csv"
 
     Enumerator.new do |yielder|
-      yielder << CSV.generate_line(['ID', 'Invoice Number', 'Total', 'Date', 'Status', 'Active'])
+      yielder << CSV.generate_line([ "ID", "Invoice Number", "Total", "Date", "Status", "Active" ])
 
       model.find_in_batches(batch_size: 1000) do |batch|
         batch.each do |invoice|
