@@ -29,28 +29,10 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    command: ./bin/rails server -b 0.0.0.0
+    # Remove command override to use the entrypoint script
+    # command: ./bin/rails server -b 0.0.0.0
     stdin_open: true
     tty: true
-
-  sidekiq:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: billing_backend_sidekiq
-    environment:
-      RAILS_ENV: development
-      REDIS_URL: redis://redis:6379/0
-      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
-    volumes:
-      - .:/rails
-      - bundle_cache:/usr/local/bundle
-    depends_on:
-      redis:
-        condition: service_healthy
-    command: bundle exec sidekiq
-    profiles:
-      - sidekiq
 
 volumes:
   redis_data:

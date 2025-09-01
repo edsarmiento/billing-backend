@@ -17,5 +17,15 @@ until redis-cli -h redis ping; do
 done
 echo "Redis is ready!"
 
+echo "Starting Sidekiq..."
+bundle exec sidekiq &
+
+sleep 2
+
 # Then exec the container's main process (what's set as CMD in the Dockerfile).
-exec "$@"
+# Use bundle exec to ensure gems are available
+if [[ "$1" == "rails" ]]; then
+  exec bundle exec "$@"
+else
+  exec "$@"
+fi
