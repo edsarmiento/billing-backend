@@ -1,8 +1,8 @@
 class TopSellingDaysService
   attr_reader :repository
 
-  def initialize(repository: InvoiceRepository.new)
-    @repository = repository
+  def initialize()
+    @repository = InvoiceRepository.new
   end
 
   def call
