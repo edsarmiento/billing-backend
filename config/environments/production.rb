@@ -67,12 +67,12 @@ Rails.application.configure do
   # Configure SendGrid for email delivery
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address: 'smtp.sendgrid.net',
+    user_name: "apikey",
+    password: ENV["SENDGRID_API_KEY"],
+    domain: ENV["SENDGRID_DOMAIN"],
+    address: "smtp.sendgrid.net",
     port: 587,
-    domain: ENV['SENDGRID_DOMAIN'],
-    user_name: 'keyfullaccess',
-    password: ENV['SENDGRID_API_KEY'],
-    authentication: 'plain',
+    authentication: :plain,
     enable_starttls_auto: true
   }
   
