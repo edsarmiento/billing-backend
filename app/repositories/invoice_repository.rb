@@ -143,4 +143,24 @@ class InvoiceRepository < BaseRepository
       model.sum(:total)
     end
   end
+
+  def top_selling_days
+    sql = <<~SQL
+      SELECT#{' '}
+        DATE(invoice_date) as day,
+        COUNT(*) as invoices_count,
+        ROUND(AVG(total)::numeric, 2) as average_invoice_value,
+        ROUND(SUM(total)::numeric, 2) as total_amount
+      FROM invoices
+      WHERE invoice_date IS NOT NULL
+        AND total IS NOT NULL
+        AND total > 0
+      GROUP BY DATE(invoice_date)
+      HAVING COUNT(*) > 0
+      ORDER BY SUM(total) DESC, COUNT(*) DESC
+      LIMIT 10
+    SQL
+
+    ActiveRecord::Base.connection.execute(sql).to_a
+  end
 end

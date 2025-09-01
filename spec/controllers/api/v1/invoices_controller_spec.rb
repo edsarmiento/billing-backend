@@ -2,15 +2,9 @@ require 'rails_helper'
 
 RSpec.describe Api::V1::InvoicesController, type: :controller do
   let(:service) { instance_double(InvoiceService) }
-  let(:repository) { instance_double(InvoiceRepository) }
-  let(:validator) { instance_double(InvoiceSearchValidator) }
-  let(:exporter) { instance_double(InvoiceCsvExporter) }
 
   before do
     allow(InvoiceService).to receive(:new).and_return(service)
-    allow(service).to receive(:repository).and_return(repository)
-    allow(service).to receive(:validator).and_return(validator)
-    allow(service).to receive(:exporter).and_return(exporter)
   end
 
   describe 'GET #index' do
@@ -122,7 +116,7 @@ RSpec.describe Api::V1::InvoicesController, type: :controller do
   end
 
   describe 'GET #export' do
-    let(:csv_data) { "ID,Invoice Number,Total,Date,Status,Active,Formatted Total\n1,C30481,14.45,2022-01-17,Vigente,true,$14.45\n" }
+    let(:csv_data) { "ID,Invoice Number,Total\n1,C30001,25.50" }
 
     before do
       allow(service).to receive(:export_to_csv).and_return(csv_data)
@@ -135,20 +129,19 @@ RSpec.describe Api::V1::InvoicesController, type: :controller do
 
     it 'sets correct content type' do
       get :export, format: :csv
-      expect(response.content_type).to include('text/csv')
+      expect(response.headers['Content-Type']).to eq('text/csv')
     end
 
     it 'sets correct filename' do
       get :export, format: :csv
-      expect(response.headers['Content-Disposition']).to include('attachment')
-      expect(response.headers['Content-Disposition']).to include('invoices_')
-      expect(response.headers['Content-Disposition']).to include('.csv')
+      expected_filename = "invoices_#{Date.current.strftime('%Y%m%d')}.csv"
+      expect(response.headers['Content-Disposition']).to include(expected_filename)
     end
 
     it 'exports with parameters' do
-      export_params = { status: 'Vigente' }
-      get :export, params: export_params, format: :csv
-      expect(service).to have_received(:export_to_csv).with({ "status" => "Vigente" })
+      params = { status: 'Vigente' }
+      get :export, params: params, format: :csv
+      expect(service).to have_received(:export_to_csv).with(params)
     end
 
     it 'streams CSV data' do
@@ -159,13 +152,8 @@ RSpec.describe Api::V1::InvoicesController, type: :controller do
 
   describe 'private methods' do
     describe '#set_cache_headers' do
-      let(:paginated_invoices) { double('PaginatedInvoices', current_page: 1, total_pages: 1, total_count: 3, limit_value: 20) }
-      let(:pagination_metadata) { { current_page: 1, total_pages: 1, total_count: 3, per_page: 20 } }
-
       before do
         allow(service).to receive(:validate_search_params).and_return([])
-        allow(service).to receive(:paginated_search).and_return(paginated_invoices)
-        allow(service).to receive(:get_pagination_metadata).and_return(pagination_metadata)
         allow(service).to receive(:search_invoices).and_return([])
       end
 
@@ -182,19 +170,23 @@ RSpec.describe Api::V1::InvoicesController, type: :controller do
     end
 
     describe '#pagination_requested?' do
+      before do
+        allow(service).to receive(:validate_search_params).and_return([])
+        allow(service).to receive(:paginated_search).and_return(double('PaginatedInvoices'))
+        allow(service).to receive(:get_pagination_metadata).and_return({})
+        allow(service).to receive(:search_invoices).and_return([])
+      end
+
       it 'returns true when page parameter is present' do
-        params = { page: '1' }
-        expect(controller.send(:pagination_requested?, params)).to be true
+        expect(controller.send(:pagination_requested?, { page: "1" })).to be true
       end
 
       it 'returns true when per_page parameter is present' do
-        params = { per_page: '20' }
-        expect(controller.send(:pagination_requested?, params)).to be true
+        expect(controller.send(:pagination_requested?, { per_page: "20" })).to be true
       end
 
       it 'returns false when no pagination parameters are present' do
-        params = { status: 'Vigente' }
-        expect(controller.send(:pagination_requested?, params)).to be false
+        expect(controller.send(:pagination_requested?, {})).to be false
       end
     end
   end
