@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Reporte de Días con Mayor Venta</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #007bff;
+      margin: 0;
+      font-size: 28px;
+    }
+    .header p {
+      color: #666;
+      margin: 10px 0 0 0;
+      font-size: 16px;
+    }
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    .stats-table th {
+      background-color: #007bff;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: bold;
+    }
+    .stats-table td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+    .stats-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    .stats-table tr:hover {
+      background-color: #e9ecef;
+    }
+    .footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
+    .highlight {
+      background-color: #fff3cd;
+      padding: 15px;
+      border-radius: 5px;
+      border-left: 4px solid #ffc107;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Reporte de Días con Mayor Venta</h1>
+      <p>Análisis de los 10 días con mayor volumen de ventas</p>
+      <p><strong>Generado el:</strong> <%= l(@generated_at, format: :long) %></p>
+    </div>
+
+    <div class="highlight">
+      <strong>📈 Resumen:</strong> Este reporte muestra los días con mayor facturación total, incluyendo el número de facturas, valor promedio y monto total por día.
+    </div>
+
+    <table class="stats-table">
+      <thead>
+        <tr>
+          <th>🏆 Posición</th>
+          <th>📅 Fecha</th>
+          <th>📋 Número de Facturas</th>
+          <th>💰 Valor Promedio</th>
+          <th>💵 Monto Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @top_selling_days.each_with_index do |day, index| %>
+          <tr>
+            <td><strong>#<%= index + 1 %></strong></td>
+            <td><strong><%= l(day['day'], format: :long) %></strong></td>
+            <td><%= number_with_delimiter(day['invoices_count']) %></td>
+            <td>$<%= number_with_delimiter(day['average_invoice_value'].to_f.round(2)) %></td>
+            <td><strong>$<%= number_with_delimiter(day['total_amount'].to_f.round(2)) %></strong></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <div class="highlight">
+      <strong>💡 Análisis:</strong>
+      <ul>
+        <li><strong>Mejor día:</strong> <%= l(@top_selling_days.first['day'], format: :long) %> con $<%= number_with_delimiter(@top_selling_days.first['total_amount'].to_f.round(2)) %></li>
+        <li><strong>Total de facturas analizadas:</strong> <%= number_with_delimiter(@top_selling_days.sum { |day| day['invoices_count'] }) %></li>
+        <li><strong>Promedio de facturas por día:</strong> <%= number_with_delimiter((@top_selling_days.sum { |day| day['invoices_count'] } / @top_selling_days.length.to_f).round(1)) %></li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <p>Este reporte fue generado automáticamente por el sistema de facturación.</p>
+      <p>Para más información, contacte al equipo de desarrollo.</p>
+    </div>
+  </div>
+</body>
+</html>

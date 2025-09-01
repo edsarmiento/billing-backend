@@ -57,3 +57,8 @@ group :development, :test do
   gem "faker"
   gem "rails-controller-testing"
 end
+
+group :development do
+  # Open emails in browser instead of sending them
+  gem "letter_opener"
+end

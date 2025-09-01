@@ -1,0 +1,28 @@
+REPORTE DE DÍAS CON MAYOR VENTA
+================================
+
+Análisis de los 10 días con mayor volumen de ventas
+Generado el: <%= l(@generated_at, format: :long) %>
+
+RESUMEN:
+Este reporte muestra los días con mayor facturación total, incluyendo el número de facturas, valor promedio y monto total por día.
+
+TOP 10 DÍAS CON MAYOR VENTA:
+============================
+
+<% @top_selling_days.each_with_index do |day, index| %>
+<%= index + 1 %>. <%= l(day['day'], format: :long) %>
+    Número de Facturas: <%= number_with_delimiter(day['invoices_count']) %>
+    Valor Promedio: $<%= number_with_delimiter(day['average_invoice_value'].to_f.round(2)) %>
+    Monto Total: $<%= number_with_delimiter(day['total_amount'].to_f.round(2)) %>
+<% end %>
+
+ANÁLISIS:
+---------
+- Mejor día: <%= l(@top_selling_days.first['day'], format: :long) %> con $<%= number_with_delimiter(@top_selling_days.first['total_amount'].to_f.round(2)) %>
+- Total de facturas analizadas: <%= number_with_delimiter(@top_selling_days.sum { |day| day['invoices_count'] }) %>
+- Promedio de facturas por día: <%= number_with_delimiter((@top_selling_days.sum { |day| day['invoices_count'] } / @top_selling_days.length.to_f).round(1)) %>
+
+---
+Este reporte fue generado automáticamente por el sistema de facturación.
+Para más información, contacte al equipo de desarrollo.
