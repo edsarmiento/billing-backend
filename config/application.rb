@@ -40,9 +40,9 @@ module BillingBackend
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
-    
+
     # Configure available locales
-    config.i18n.available_locales = [:en, :es]
+    config.i18n.available_locales = [ :en, :es ]
     config.i18n.default_locale = :en
   end
 end

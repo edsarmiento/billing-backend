@@ -73,15 +73,18 @@ Rails.application.configure do
     address: "smtp.sendgrid.net",
     port: 587,
     authentication: :plain,
-    enable_starttls_auto: true
+    enable_starttls_auto: true,
+    open_timeout: 30,
+    read_timeout: 60,
+    write_timeout: 60
   }
-  
+
   # Set default URL options for mailer
-  config.action_mailer.default_url_options = { 
-    host: ENV['APP_HOST'],
-    protocol: 'https'
+  config.action_mailer.default_url_options = {
+    host: ENV["APP_HOST"],
+    protocol: "https"
   }
-  
+
   # Raise delivery errors in production for debugging
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_deliveries = true

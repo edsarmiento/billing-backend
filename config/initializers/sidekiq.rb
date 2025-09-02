@@ -1,55 +1,24 @@
 require "sidekiq"
+require "sidekiq-cron"
 
+# Configure Sidekiq
 Sidekiq.configure_server do |config|
-  redis_url = ENV["REDIS_URL"] || "redis://localhost:6379/0"
+  config.redis = { url: ENV["REDIS_URL"] || "redis://localhost:6379/0" }
   
-  # Try to parse Redis URL and handle authentication
-  begin
-    uri = URI.parse(redis_url)
-    redis_config = {
-      host: uri.host,
-      port: uri.port,
-      db: uri.path&.gsub('/', '')&.to_i || 0
-    }
-    
-    # If there's a password in the URL, use it
-    if uri.password
-      redis_config[:password] = uri.password
-    end
-    
-    config.redis = redis_config
-  rescue => e
-    # Fallback to URL if parsing fails
-    config.redis = { url: redis_url }
+  # Set longer timeout for jobs to handle email sending
+  config.timeout = 120  # 2 minutes total timeout
+  config.death_handlers << ->(job, ex) do
+    Sidekiq.logger.error "Job #{job['class']} failed: #{ex.message}"
   end
-
-  # Configure logging
-  config.logger.level = Logger::INFO
-
-  # Configure concurrency
-  config.concurrency = ENV.fetch("SIDEKIQ_CONCURRENCY", 5).to_i
 end
 
 Sidekiq.configure_client do |config|
-  redis_url = ENV["REDIS_URL"] || "redis://localhost:6379/0"
-  
-  # Try to parse Redis URL and handle authentication
-  begin
-    uri = URI.parse(redis_url)
-    redis_config = {
-      host: uri.host,
-      port: uri.port,
-      db: uri.path&.gsub('/', '')&.to_i || 0
-    }
-    
-    # If there's a password in the URL, use it
-    if uri.password
-      redis_config[:password] = uri.password
-    end
-    
-    config.redis = redis_config
-  rescue => e
-    # Fallback to URL if parsing fails
-    config.redis = { url: redis_url }
-  end
+  config.redis = { url: ENV["REDIS_URL"] || "redis://localhost:6379/0" }
+end
+
+# Schedule cron jobs
+schedule_file = Rails.root.join("config", "sidekiq_cron.yml")
+
+if File.exist?(schedule_file) && Sidekiq.server?
+  Sidekiq::Cron::Job.load_from_hash YAML.load_file(schedule_file)
 end

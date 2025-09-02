@@ -9,9 +9,6 @@ RAILWAY_DEPLOYMENT.md
 *.md
 
 # Docker
-Dockerfile
-Dockerfile.dev
-Dockerfile.prod
 docker-compose.yml
 .dockerignore
 

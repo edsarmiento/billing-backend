@@ -13,7 +13,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client cron sudo && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment
@@ -56,6 +56,15 @@ COPY --from=build /rails /rails
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
     chown -R rails:rails db log storage tmp
+
+# Add rails user to sudo group for cron operations
+RUN usermod -aG sudo rails && \
+    echo "rails ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Create cron directory and set permissions
+RUN mkdir -p /var/log/cron && \
+    chown -R rails:rails /var/log/cron
+
 USER 1000:1000
 
 # Entrypoint prepares the database.

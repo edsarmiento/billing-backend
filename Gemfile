@@ -41,6 +41,8 @@ gem "bullet"
 # Background job processing
 gem "sidekiq"
 
+# gem "whenever", require: false  # Replaced with sidekiq-cron
+
 # Email delivery for production
 gem "sendgrid-ruby"
 
@@ -65,3 +67,4 @@ group :development do
   # Open emails in browser instead of sending them
   gem "letter_opener"
 end
+gem "sidekiq-cron"
