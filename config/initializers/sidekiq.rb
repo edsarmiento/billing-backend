@@ -4,9 +4,8 @@ require "sidekiq-cron"
 # Configure Sidekiq
 Sidekiq.configure_server do |config|
   config.redis = { url: ENV["REDIS_URL"] || "redis://localhost:6379/0" }
-  
-  # Set longer timeout for jobs to handle email sending
-  config.timeout = 120  # 2 minutes total timeout
+
+  # Better error handling for failed jobs
   config.death_handlers << ->(job, ex) do
     Sidekiq.logger.error "Job #{job['class']} failed: #{ex.message}"
   end
