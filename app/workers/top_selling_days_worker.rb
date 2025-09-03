@@ -1,5 +1,8 @@
 class TopSellingDaysWorker
   include Sidekiq::Worker
+  
+  # Set longer timeout for email sending
+  sidekiq_options timeout: 60
 
   def perform
     Rails.logger.info "🚀 TopSellingDaysWorker called at #{Time.current.utc} (UTC)"
