@@ -8,7 +8,6 @@ RSpec.describe InvoiceService do
 
   describe '#search_invoices' do
     let(:params) { { status: 'Vigente' } }
-    # Use real data from the read-only database
     let(:real_invoices) { Invoice.where(status: 'Vigente').limit(2) }
 
     before do
@@ -23,7 +22,6 @@ RSpec.describe InvoiceService do
   end
 
   describe '#find_invoice_by_number' do
-    # Use real invoice data from the database
     let(:real_invoice) { Invoice.first }
     let(:invoice_number) { real_invoice.invoice_number }
 
@@ -166,20 +164,17 @@ RSpec.describe InvoiceService do
       let(:real_service) { described_class.new }
 
       it 'can search real invoices' do
-        # This test uses real data from the read-only database
         result = real_service.search_invoices({ status: 'Vigente' })
         expect(result).to be_an(ActiveRecord::Relation)
       end
 
       it 'can find real invoice by number' do
-        # This test uses real data from the read-only database
         real_invoice = Invoice.first
         result = real_service.find_invoice_by_number(real_invoice.invoice_number)
         expect(result).to eq(real_invoice)
       end
 
       it 'validates real search parameters' do
-        # This test uses real data from the read-only database
         result = real_service.validate_search_params({ status: 'Vigente' })
         expect(result).to be_an(Array)
       end
