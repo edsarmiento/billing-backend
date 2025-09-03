@@ -1,4 +1,4 @@
 top_selling_days_worker:
-  cron: "0 10 * * *"  # At 10:00 every day
+  cron: "0 15 * * *"  # At 9:00 AM CST (UTC-6)
   class: "TopSellingDaysWorker"
   queue: default
